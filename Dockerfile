@@ -29,5 +29,3 @@ RUN chown -R 1000:1000 /opt/app/  && \
     chown -R 1000:1000 /var/lib/nginx/
 
 USER 1000
-
-CMD ["python", "serve.py"]

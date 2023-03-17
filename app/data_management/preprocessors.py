@@ -1,6 +1,12 @@
 import numpy as np
 import pandas as pd
+import sys
 from sklearn.base import BaseEstimator, TransformerMixin
+from feature_engine.imputation import (
+    AddMissingIndicator,
+    CategoricalImputer,
+    MeanMedianImputer,
+)
 from sklearn.preprocessing import label_binarize
 
 
@@ -132,12 +138,13 @@ class MostFrequentImputer(BaseEstimator, TransformerMixin):
         Returns:
             self
         """
-        self.fitted_cat_vars = [
-            var for var in self.cat_vars
-            if var in X.columns and X[var].isnull().mean() <  self.threshold ]
+        if self.cat_vars and len(self.cat_vars) > 0:
+            self.fitted_cat_vars = [
+                var for var in self.cat_vars
+                if var in X.columns and X[var].isnull().mean() <  self.threshold ]
 
-        for col in self.fitted_cat_vars:
-            self.fill_vals[col] = X[col].value_counts().index[0]
+            for col in self.fitted_cat_vars:
+                self.fill_vals[col] = X[col].value_counts().index[0]
         return self
 
     def transform(self, X, y=None):
@@ -153,6 +160,52 @@ class MostFrequentImputer(BaseEstimator, TransformerMixin):
         for col in self.fill_vals:
             if col in X.columns:
                 X[col] = X[col].fillna(self.fill_vals[col])
+        return X
+
+
+class FeatureEngineCategoricalTransformerWrapper(BaseEstimator, TransformerMixin):
+    def __init__(self, transformer, cat_vars, **kwargs):
+        """
+        Wrapper class that fits/transforms using given transformer if there are categorical variables present, else does nothing. 
+        
+        Args:
+            transformer : feature-engine transformer class
+                feature-engine transformer to apply on categorical features.
+            cat_vars : list of str
+                List of the categorical features to impute.
+            **kwags : any
+                Additional key-value pairs for arguments accepted by the given transformer
+
+        """
+        self.cat_vars = cat_vars
+        self.transformer = transformer(variables = cat_vars, **kwargs)
+
+    def fit(self, X, y=None): 
+        """
+        Fits the transformer if categorical variables are present.
+
+        Args:
+            X: pandas DataFrame - the input data
+            y: unused
+        Returns:
+            self
+        """
+        if len(self.cat_vars) > 0:            
+            self.transformer.fit(X[self.cat_vars], y)
+        return self
+    
+    def transform(self, X, y=None):
+        """
+        Transform the data if categorical variables are present..
+
+        Args:
+            X: pandas DataFrame - The data to transform.
+            y: unused
+        Returns:
+            pandas DataFrame - The transformed data with the fitted categorical features.
+        """
+        if len(self.cat_vars) > 0:
+            X[self.cat_vars] = self.transformer.transform(X[self.cat_vars])
         return X
 
 
@@ -203,28 +256,31 @@ class OneHotEncoderMultipleCols(BaseEstimator, TransformerMixin):
         Returns:
             transformed_data : pandas DataFrame - One-hot encoded data.
         """
-        data.reset_index(inplace=True, drop=True)
-        df_list = [data]
-        cols_list = list(data.columns)
-        for col in self.ohe_columns:
-            if len(self.top_cat_by_ohe_col[col]) > 0:
-                if col in data.columns:
-                    for cat in self.top_cat_by_ohe_col[col]:
-                        col_name = col + '_' + cat
-                        vals = np.where(data[col] == cat, 1, 0)
-                        df = pd.DataFrame(vals, columns=[col_name])
-                        df_list.append(df)
+        if self.ohe_columns and len(self.ohe_columns) > 0:
+            data.reset_index(inplace=True, drop=True)
+            df_list = [data]
+            cols_list = list(data.columns)
+            for col in self.ohe_columns:
+                if len(self.top_cat_by_ohe_col[col]) > 0:
+                    if col in data.columns:
+                        for cat in self.top_cat_by_ohe_col[col]:
+                            col_name = col + '_' + cat
+                            vals = np.where(data[col] == cat, 1, 0)
+                            df = pd.DataFrame(vals, columns=[col_name])
+                            df_list.append(df)
 
-                        cols_list.append(col_name)
-                else:
-                    raise Exception(f'''
-                        Error: Fitted one-hot-encoded column {col}
-                        does not exist in dataframe given for transformation.
-                        This will result in a shape mismatch for train/prediction job.
-                        ''')
-        transformed_data = pd.concat(df_list, axis=1, ignore_index=True)
-        transformed_data.columns =  cols_list
-        return transformed_data
+                            cols_list.append(col_name)
+                    else:
+                        raise Exception(f'''
+                            Error: Fitted one-hot-encoded column {col}
+                            does not exist in dataframe given for transformation.
+                            This will result in a shape mismatch for train/prediction job.
+                            ''')
+            transformed_data = pd.concat(df_list, axis=1, ignore_index=True)
+            transformed_data.columns =  cols_list
+            return transformed_data
+        else: 
+            return data
 
 
 class CustomLabelBinarizer(BaseEstimator, TransformerMixin):
