@@ -4,7 +4,7 @@ services:
     container_name: myc
     build: .
     volumes:
-      - ./../ml_vol:/opt/ml_vol
+      - ./ml_mount:/opt/ml_mount
     ports:
       - 8080:8080
     command: tail -f /dev/null # keep the container running

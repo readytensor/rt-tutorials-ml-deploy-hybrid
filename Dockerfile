@@ -2,30 +2,29 @@ FROM python:3.8.0-slim as builder
 
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
-         nginx \
          ca-certificates \
+         dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
+COPY ./requirements.txt /opt/
+RUN pip3 install -r /opt/requirements.txt 
 
-COPY ./requirements.txt .
-RUN pip3 install -r requirements.txt 
+COPY ./fix_line_endings.sh /opt/
+RUN chmod +x /opt/fix_line_endings.sh 
 
+COPY src ./opt/src
 
-COPY app ./opt/app
+RUN /opt/fix_line_endings.sh
 
-WORKDIR /opt/app
+WORKDIR /opt/src
 
 
 ENV PYTHONUNBUFFERED=TRUE
 ENV PYTHONDONTWRITEBYTECODE=TRUE
-ENV PATH="/opt/app:${PATH}"
+ENV PATH="/opt/src:${PATH}"
 
 RUN chmod +x train.py \
- && chmod +x test.py \
+ && chmod +x predict.py \
  && chmod +x serve.py 
-
-RUN chown -R 1000:1000 /opt/app/  && \
-    chown -R 1000:1000 /var/log/nginx/  && \
-    chown -R 1000:1000 /var/lib/nginx/
 
 USER 1000
