@@ -1,6 +1,6 @@
 ## Introduction
 
-This repository demonstrates how to use incorporate input data validation for machine learning model implementations. We use Pydantic for validating the schema file and the train/test data.
+This repository is a dockerized implementation of the random forest binary classifier. It is implemented in flexible way that it can be used with any binary classification dataset with with use of a data schema. The model includes a flexible preprocessing pipeline, the main random forest algorithm, hyperparameter-tuning using scikit-optimize, a SHAP explainer, and a FASTAPI inference service which provides endpoints for predictions and local explanations. Pydantic data validation is used for the schema, training and test files, as well as the inference request data. The repo also includes comprehensive set of unit and integration tests.
 
 This repository is part of a tutorial series on Ready Tensor, a web platform for AI developers and users. The purpose of the tutorial series is to help AI developers create adaptable algorithm implementations that avoid hard-coding your logic to a specific dataset. This makes it easier to re-use your algorithms with new datasets in the future without requiring any code change.
 
@@ -88,7 +88,7 @@ binary_class_project/
 - **`README.md`**: This file contains the documentation for the project, explaining how to set it up and use it.
 - **`requirements.txt`**: This file lists the dependencies for the project, making it easier to install all necessary packages.
 
-## Usage
+## Usage (to run locally)
 
 - Create your virtual environment and install dependencies listed in `requirements.txt`.
 - Place the following 3 input files in the sub-directories in `./app/inputs/`:
@@ -99,39 +99,18 @@ binary_class_project/
 - Run the script `predict.py` to run batch predictions using the trained model. This script will load the artifacts and create and save the predictions in a file called `predictions.csv` in the path `./app/outputs/predictions/`.
 - Run the script `serve.py` to start the inference service, which can be queried using the `/ping` and `/infer` endpoints. The service also provides local explanations for the predictions using the `/explain` endpoint.
 
-## Validations performed on schema file
+## Usage with Docker
 
-The implementation performs the following validations on the schema file:
+- Set up a bind mount
+- Build the image. You can use the following command:
 
-- **problemCategory** must be set to "binary_classification_base"
-- **version** must be set to "1.0"
-- **inputDatasets** must not be empty
-- **inputDatasets** must have a single key named "binaryClassificationBaseMainInput"
-- **idField** must be specified
-- **targetField** must be specified
-- **targetClass** must be specified
-- **predictorFields** must be a non-empty list of objects
-- Each **predictorFields** object must contain a **fieldName**
-- Each **predictorFields** object must have a valid **dataType** of "**CATEGORICAL**", "**INT**", "**REAL**", or - "**NUMERIC**"
+`docker build -t classifier_img .`
 
-## Validations performed on train and test data files
+Here `classifier_img` is the name given to the container (you can choose any name).
 
-The implementation performs the following validations on the schema file:
+- Run the container and start the sevice. Use the `-p` flag to map a port on local host to the port 8080 in the container. You can use the following command:
 
-- ID field must be present. The name of the ID field is defined in the schema file.
-- Target field must be present if data is for training. The name of the target field is defined in the schema file.
-- All categorical or numerical features specified in the schema file must be present in the data file.
-
-## Validations performed on inference request data
-
-The implementation performs the following validations on the inference request data:
-
-- The request body contains a key 'instances' with a list of dictionaries as its value.
-- The list is not empty (i.e., at least one instance must be provided).
-- Each instance contains the 'id' field whose name is defined in the schema file.
-- Each instance contains all the required numerical and categorical features as defined in the schema file.
-- Values for each feature in each instance are of the correct data type. Values are allowed to be null (i.e., missing).
-- For categorical features, the given value must be one of the categories as defined in the schema file.
+`docker run -it -p 8080:8080 --name classifier classifier_img`
 
 ## Requirements
 
