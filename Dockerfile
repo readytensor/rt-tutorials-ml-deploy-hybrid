@@ -6,7 +6,7 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
          dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements.txt /opt/
+COPY ./requirements/requirements.txt /opt/
 RUN pip3 install -r /opt/requirements.txt 
 
 COPY ./fix_line_endings.sh /opt/

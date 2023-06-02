@@ -44,15 +44,11 @@ HPT_OUTPUTS_DIR = os.path.join(OUTPUT_DIR, "hpt_outputs")
 HPT_RESULTS_FILE_PATH = os.path.join(HPT_OUTPUTS_DIR, "HPT_results.csv")
 
 # Path to logs directory inside outputs directory
-LOGS_DIR = os.path.join(OUTPUT_DIR, "logs")
-# Log file paths
-TRAIN_LOG_FILE_PATH = os.path.join(LOGS_DIR, "train_log.txt")
-PREDICT_LOG_FILE_PATH = os.path.join(LOGS_DIR, "predict_log.txt")
-SERVE_LOG_FILE_PATH = os.path.join(LOGS_DIR, "serve_log.txt")
+ERRORS_DIR = os.path.join(OUTPUT_DIR, "errors")
 # Error file paths
-TRAIN_ERROR_FILE_PATH = os.path.join(LOGS_DIR, "train_error.txt")
-PREDICT_ERROR_FILE_PATH = os.path.join(LOGS_DIR, "predict_error.txt")
-SERVE_ERROR_FILE_PATH = os.path.join(LOGS_DIR, "serve_error.txt")
+TRAIN_ERROR_FILE_PATH = os.path.join(ERRORS_DIR, "train_error.txt")
+PREDICT_ERROR_FILE_PATH = os.path.join(ERRORS_DIR, "predict_error.txt")
+SERVE_ERROR_FILE_PATH = os.path.join(ERRORS_DIR, "serve_error.txt")
 
 # Paths inside the source directory
 # Path to source directory
@@ -60,12 +56,14 @@ SRC_DIR = os.path.join(ROOT_DIR, "src")
 # Path to config directory
 CONFIG_DIR = os.path.join(SRC_DIR, "config")
 # Path to model config
-MODEL_CONFIG_FILE_PATH  = os.path.join(CONFIG_DIR, "model_config.json")
+MODEL_CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, "model_config.json")
 # Path to preprocessing config
-PREPROCESSING_CONFIG_FILE_PATH  = os.path.join(CONFIG_DIR, "preprocessing.json")
+PREPROCESSING_CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, "preprocessing.json")
 # Path to hyperparameters file with default values
-DEFAULT_HYPERPARAMETERS_FILE_PATH  = os.path.join(CONFIG_DIR, "default_hyperparameters.json")
+DEFAULT_HYPERPARAMETERS_FILE_PATH = os.path.join(
+    CONFIG_DIR, "default_hyperparameters.json"
+)
 # Path to hyperparameter tuning config file
-HPT_CONFIG_FILE_PATH  = os.path.join(CONFIG_DIR, "hpt.json")
+HPT_CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, "hpt.json")
 # Path to explainer (explainable AI or XAI) config file
-EXPLAINER_CONFIG_FILE_PATH  = os.path.join(CONFIG_DIR, "explainer.json")
+EXPLAINER_CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, "explainer.json")
